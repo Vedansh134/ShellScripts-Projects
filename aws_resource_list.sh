@@ -41,7 +41,7 @@
 #######################################################################
 
 # for testing
-set -euo pipefail
+set +exuo pipefail
 
 # Check if the required no. of arguements are passed
 if [[ $# -ne 2 ]]; then

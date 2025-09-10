@@ -12,7 +12,8 @@
 #
 ##########################################################################
 #
-set -xeou pipefail
+# for testing
+set +xeou pipefail
 
 # Check if the AWS CLI is installed or not
 if ! command -v aws &> /dev/null; then
