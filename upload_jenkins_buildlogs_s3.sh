@@ -7,7 +7,8 @@
 # Date: 2024-06-10
 # Description: This script uploads Jenkins logs to an S3 bucket for backup and analysis.
 #
-set -euo pipefail
+# for testing
+set +xeuo pipefail
 
 # variables
 JENKINS_HOME="/var/lib/jenkins"
@@ -45,6 +46,6 @@ for job_dir in "$JENKINS_HOME/jobs/"*/; do
     done
 done
 
-
+# ======================================== end of script ==========================================
 
 
