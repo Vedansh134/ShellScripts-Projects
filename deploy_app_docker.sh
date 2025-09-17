@@ -14,12 +14,15 @@ set +xeou pipefail
 
 # define variables
 SUDO='sudo'
+REPO_URL="https://github.com/Vedansh134/devops-task.git"
+REPO_DIR="devops-task"
+BRANCH="main"
 
 echo "Updating ubuntu..."
 $SUDO apt-get update
 
 # check git installed or not
-if git --version >/dev/null 2>&1; then
+if command -v git >/dev/null 2>&1; then
     echo "Git is already installed."
 else
     echo "Git is not enabled. Installing Git..."
@@ -27,19 +30,21 @@ else
 fi
 
 code_clone() {
-    echo "Cloning the repository..."
-    git clone https://github.com/Vedansh134/django-notes-app.git
-    # check if dir exists or not
-    if [[ ! -d django-notes-app]]; then
-        echo "Directory django-notes-app does not exist. Exiting..."
-        exit 1
+    echo "Cloning (or updating) the repository..."
+    if [[ -d $REPO_DIR ]]; then
+        echo "Directory $REPO_DIR already exists. Pulling latest changes..."
+        cd $REPO_DIR
+        git pull
+    else
+        echo "Cloning the repository..."
+        git clone --branch "$BRANCH" "$REPO_URL"
+        cd $REPO_DIR
     fi
-    cd django-notes-app
 }
 
 install_requirements() {
     echo "Installing required packages..."
-    if docker --version >/dev/null 2>&1 && nginx --version >/dev/null 2>&1; then
+    if command -v docker >/dev/null 2>&1 && command -v nginx >/dev/null 2>&1; then
         echo "Docker and Nginx are already installed."
     else
         echo "Docker and nginx are not installed. Installing Docker & Nginx..."
@@ -50,23 +55,21 @@ install_requirements() {
 }
 
 required_restarts() {
+    $SUDO chown $USER /var/run/docker.sock
     echo "Enabling docker and nginx services..."
-    $SUDO systemctl restart docker.service nginx.service
+    $SUDO systemctl restart docker.service
 }
 
 deploy(){
-    docker build -t vedansh134/django-notes-app:latest .
-    docker run -d -p 8000:8000 vedansh134/django-notes-app:latest
+    docker build -t devops-task:latest .
+    docker run -d --name devops-task -p 3000:3000 devops-task:latest
 }
 
 # main function to call other functions
 main() {
     echo "Starting deployment process..."
-    code_clone
-    if ! install_requirements; then
-        echo "Failed to install required packages. Exiting..."
-        exit 1
-    fi
+    code_clone;
+    install_requirements;
     required_restarts
     deploy
 }
