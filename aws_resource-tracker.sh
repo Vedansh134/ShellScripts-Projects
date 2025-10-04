@@ -12,8 +12,9 @@
 #
 ##########################################################################
 #
-# for testing
-set +xeou pipefail
+# testing (change to set -xeou pipefail for testing)
+# safe defaults; add -x while debugging: set -euo pipefail; set -x
+set +euo pipefail
 
 # Check if the AWS CLI is installed or not
 if ! command -v aws &> /dev/null; then

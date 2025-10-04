@@ -10,7 +10,8 @@
 #
 #
 # testing (change to set -xeou pipefail for testing)
-set +xeou pipefail
+# safe defaults; add -x while debugging: set -euo pipefail; set -x
+set +euo pipefail
 
 # define variables
 SUDO='sudo'

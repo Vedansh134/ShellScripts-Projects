@@ -2,6 +2,10 @@
 
 # ============================= Disk usage script ============================
 
+# testing (change to set -xeou pipefail for testing)
+# safe defaults; add -x while debugging: set -euo pipefail; set -x
+set +euo pipefail
+
 echo "disk usage"
 
 alert=15
