@@ -75,7 +75,6 @@ create_ec2_instance() {
     echo "Instance $instance_id created successfully."
 
     # Wait for the instance to be in running state
-    wait_for_instance "$instance_id"
 }
 
 # main function to call other functions
