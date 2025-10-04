@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 ################################################################################
-#============================= deploy a django app =============================
+#============================= containerize a app =============================
 ################################################################################
 #
 # Version: 1.0
@@ -16,7 +16,7 @@ set +xeou pipefail
 SUDO='sudo'
 REPO_URL="https://github.com/Vedansh134/devops-task.git"
 REPO_DIR="devops-task"
-BRANCH="main"
+BRANCH="dev"
 
 echo "Updating ubuntu..."
 $SUDO apt-get update
@@ -25,7 +25,7 @@ $SUDO apt-get update
 if command -v git >/dev/null 2>&1; then
     echo "Git is already installed."
 else
-    echo "Git is not enabled. Installing Git..."
+    echo "Git is not installed. Installing Git..."
     $SUDO apt install git -y
 fi
 
@@ -56,7 +56,7 @@ install_requirements() {
 
 required_restarts() {
     $SUDO chown $USER /var/run/docker.sock
-    echo "Enabling docker and nginx services..."
+    echo "Restarting docker and nginx services..."
     $SUDO systemctl restart docker.service
 }
 
@@ -76,3 +76,7 @@ main() {
 
 # invoke main function
 main
+
+echo "Deployment process completed."
+
+# ================================= end of script =================================
