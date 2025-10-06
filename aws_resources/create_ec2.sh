@@ -4,7 +4,7 @@
 # create_ec2_instance.sh
 # version: 1.0
 # author: Vedansh kumar
-# date: 2024-06-10
+# date: 04-10-2025
 # description: This script creates an EC2 instance using AWS CLI.
 ################################################################################
 
