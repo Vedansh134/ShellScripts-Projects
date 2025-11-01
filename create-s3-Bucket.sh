@@ -3,6 +3,7 @@
 # ========================= AWS resource shell script =======================
 # Description: This script will be list of all AWS resources list
 # Author: Vedansh kumar
+# Date: 2024-06-10
 # Version: v0.0.1
 # Description: Use shell script to create aws s3 bucket
 # Usage: ./create-s3-Bucket.sh <bucket-name> <region>
