@@ -32,8 +32,8 @@ fi
 BACKUP_FILE="backup_${TIMESTAMP}_tar.gz"
 
 # Create the compressed tar archive
-tar -czvf BACKUP_DIR/BACKUP_FILE SOURCE_DIR
+tar -czvf ${BACKUP_DIR}/${BACKUP_FILE} ${SOURCE_DIR}
 
-echo "Backup completed: $BACKUP_DIR/$BACKUP_FILE"
+echo "Backup completed: ${BACKUP_DIR}/${BACKUP_FILE}"
 
 # ========================================= end of script =======================================
