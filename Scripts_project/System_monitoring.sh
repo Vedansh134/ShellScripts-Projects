@@ -137,18 +137,10 @@ get_check_memory(){
 
     if [ "$MEM_USAGE" -ge "$CRITICAL_THRESHOLD" ]; then
         echo "🚨 *MEMORY*   : ${MEM_USAGE}% (CRITICAL)\n   ➔ Suggestion: ${SUGGESTION}"
-
-        return 1
-
     elif [ "$MEM_USAGE" -ge "$WARNING_THRESHOLD" ]; then
         echo "⚠️ *MEMORY*   : ${MEM_USAGE}% (WARNING)\n   ➔ Suggestion: ${SUGGESTION}"
-
-        return 1
-
     else
         echo "✅ *MEMORY*   : ${MEM_USAGE}% (NORMAL)\n"
-
-        return 0
     fi
 }
 
@@ -165,18 +157,10 @@ get_check_cpu(){
 
     if [ "$CPU_USAGE" -ge "$CRITICAL_THRESHOLD" ]; then 
         echo "🚨 *CPU*   : ${CPU_USAGE}% (CRITICAL)\n   ➔ Suggestion: ${SUGGESTION}"
-
-        return 1
-
     elif [ "$CPU_USAGE" -ge "$WARNING_THRESHOLD" ]; then
         echo "⚠️ *CPU*   : ${CPU_USAGE}% (WARNING)\n   ➔ Suggestion: ${SUGGESTION}"
-
-        return 1
-
     else    
         echo "✅ *CPU*   : ${CPU_USAGE}% (NORMAL)\n"
-
-        return 0
     fi
 }
 
@@ -195,18 +179,10 @@ get_check_load(){
 
     if [ "$LOAD_PERCENT" -ge "$CRITICAL_THRESHOLD" ]; then
         echo "🚨 *LOAD*   : ${LOAD_PERCENT}% (CRITICAL)\n   ➔ Suggestion: ${SUGGESTION}"
-
-        return 1
-
     elif [ "$LOAD_PERCENT" -ge "$WARNING_THRESHOLD" ]; then
         echo "⚠️ *LOAD*   : ${LOAD_PERCENT}% (WARNING)\n   ➔ Suggestion: ${SUGGESTION}"
-
-        return 1
-
     else
         echo "✅ *LOAD*   : ${LOAD_PERCENT}% (NORMAL)\n"
-
-        return 0
     fi
 }
 
@@ -246,12 +222,9 @@ get_check_container(){
     if [ "$DOCKER_SVC" = "active" ]; then
         echo ""
         echo "✅ Docker service is running."
-
     else 
         echo "[CRITICAL] Docker service is NOT RUNNING!"
         echo "🚨 *DOCKER* : Service Down (CRITICAL)\n   ➔ Suggestion: ${SUGGEST_DOCKER_STATUS_CRITICAL}"
-        
-        return 1
     fi
 
     # 2. Check Container Status & Find its Port
@@ -275,15 +248,10 @@ get_check_container(){
                 echo ""
 
                 # local DOCKER_SUMMARY=$(printf "Running | Port: %s | CPU: %s%% | MEM: %s%%" "$CONTAINER_PORT" "$DOCKER_CPU" "$DOCKER_MEM")
-                # echo "✅ *DOCKER* : ${DOCKER_SUMMARY}"
-                return 0
-
+                # echo "✅ *DOCKER* : ${DOCKER_SUMMARY}
             else
                 echo "   ➔ Port Mapping : No public port is exposed for this container"
                 echo "⚠️ *DOCKER* : Container running, but Port Missing (WARNING)\n   ➔ Suggestion: ${SUGGEST_PORT_WARN}"
-
-                # Return 1 immediately so main() knows it failed, and stop the function.
-                return 1 
             fi
 
         else
@@ -291,14 +259,9 @@ get_check_container(){
             if docker ps -a --format '{{.Names}}' | grep -w "^$CONTAINER_NAME$" >/dev/null; then
                 echo "[CRITICAL] Container '$CONTAINER_NAME' is STOPPED!"
                 echo "🚨 *DOCKER* : Container STOPPED (CRITICAL)\n   ➔ Suggestion: ${SUGGEST_STOP_CRITICAL}"
-                
-                return 1
-
             else
                 echo "[CRITICAL] Container '$CONTAINER_NAME' does not EXIST!"
                 echo "🚨 *DOCKER* : Container does not exist (CRITICAL)\n   ➔ Suggestion: ${SUGGEST_NOT_EXIST_CRITICAL}"
-                
-                return 1    # <--- This is required! It sets HAS_ISSUE=true in main()
             fi
         fi 
     done 
@@ -325,12 +288,12 @@ main(){
     local MASTER_REPORT=""
 
     # Run each function check, if it is found anything in echo so it will append to MASTER_REPORT
-    MASTER_REPORT+="$(get_check_disk)"
-    MASTER_REPORT+="$(get_check_memory)"
-    MASTER_REPORT+="$(get_check_cpu)"
-    MASTER_REPORT+="$(get_check_load)"
-    MASTER_REPORT+="$(get_process_cpu)"
-    MASTER_REPORT+="$(get_check_container)"
+    MASTER_REPORT+="$(get_check_disk)      || true"
+    MASTER_REPORT+="$(get_check_memory)    || true"
+    MASTER_REPORT+="$(get_check_cpu)       || true"
+    MASTER_REPORT+="$(get_check_load)      || true"
+    MASTER_REPORT+="$(get_process_cpu)     || true"
+    MASTER_REPORT+="$(get_check_container) || true"
 
 
     echo ""
