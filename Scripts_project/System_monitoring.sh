@@ -108,18 +108,10 @@ get_check_disk(){
 
     if [ "$DISK_USAGE" -ge "$CRITICAL_THRESHOLD" ]; then        
         echo "🚨 *DISK*   : ${DISK_USAGE}% (CRITICAL)\n   ➔ Suggestion: ${SUGGESTION}"
-
-        return 1  # <--- Return an error code to indicate an issue occurred
-
     elif [ "$DISK_USAGE" -ge "$WARNING_THRESHOLD" ]; then
         echo "⚠️ *DISK*   : ${DISK_USAGE}% (WARNING)\n   ➔ Suggestion: ${SUGGESTION}"
-
-        return 1
-
     else
         echo "✅ *DISK*   : ${DISK_USAGE}% (NORMAL)\n"
-
-        return 0  # <--- Return 0 (success) meaning everything is fine
     fi
 }
 
@@ -247,8 +239,8 @@ get_check_container(){
                 echo "   ➔ Docker Stats : CPU: ${DOCKER_CPU}% | MEM: ${DOCKER_MEM}%"
                 echo ""
 
-                # local DOCKER_SUMMARY=$(printf "Running | Port: %s | CPU: %s%% | MEM: %s%%" "$CONTAINER_PORT" "$DOCKER_CPU" "$DOCKER_MEM")
-                # echo "✅ *DOCKER* : ${DOCKER_SUMMARY}
+                local DOCKER_SUMMARY=$(printf "Running | Port: %s | CPU: %s%% | MEM: %s%%" "$CONTAINER_PORT" "$DOCKER_CPU" "$DOCKER_MEM")
+                echo "✅ *DOCKER* : ${DOCKER_SUMMARY}
             else
                 echo "   ➔ Port Mapping : No public port is exposed for this container"
                 echo "⚠️ *DOCKER* : Container running, but Port Missing (WARNING)\n   ➔ Suggestion: ${SUGGEST_PORT_WARN}"
@@ -288,12 +280,12 @@ main(){
     local MASTER_REPORT=""
 
     # Run each function check, if it is found anything in echo so it will append to MASTER_REPORT
-    MASTER_REPORT+="$(get_check_disk)      || true"
-    MASTER_REPORT+="$(get_check_memory)    || true"
-    MASTER_REPORT+="$(get_check_cpu)       || true"
-    MASTER_REPORT+="$(get_check_load)      || true"
-    MASTER_REPORT+="$(get_process_cpu)     || true"
-    MASTER_REPORT+="$(get_check_container) || true"
+    MASTER_REPORT+="$(get_check_disk)"      || true
+    MASTER_REPORT+="$(get_check_memory)"    || true
+    MASTER_REPORT+="$(get_check_cpu)"       || true
+    MASTER_REPORT+="$(get_check_load)"      || true
+    MASTER_REPORT+="$(get_process_cpu)"     || true
+    MASTER_REPORT+="$(get_check_container)" || true
 
 
     echo ""
