@@ -333,41 +333,23 @@ main(){
     # Display System Info
     get_system_info
 
-     # Initialize a tracker to see if anything is wrong
-    local HAS_ISSUE=false
+    local MASTER_REPORT=""
 
-    # Initialize variables to store the current usage for the final "OK" message
-    local FINAL_DISK=""
-    local FINAL_MEM=""
-    local FINAL_CPU=""
-    local FINAL_LOAD=""
-    local FINAL_DOCKER=""
-
-    # Run checks. If they trigger a GChat alert, they will return a 1 (non-zero exit code)
-    # The '|| HAS_ISSUE=true' catches that and marks it.
-
-    # Monitoring Info
-    FINAL_DISK=$(get_check_disk)            || HAS_ISSUE=true
-    FINAL_MEM=$(get_check_memory)           || HAS_ISSUE=true
-    FINAL_CPU=$(get_check_cpu)              || HAS_ISSUE=true
-    get_process_cpu
-    FINAL_LOAD=$(get_check_load)            || HAS_ISSUE=true
-    FINAL_DOCKER=$(get_check_container)     || HAS_ISSUE=true
+    # Run each function check, if it is found anything in echo so it will append to MASTER_REPORT
+    MASTER_REPORT+="$(get_check_disk)"
+    MASTER_REPORT+="$(get_check_memory)"
+    MASTER_REPORT+="$(get_check_cpu)"
+    MASTER_REPORT+="$(get_check_load)"
+    MASTER_REPORT+="$(get_process_cpu)"
+    MASTER_REPORT+="$(get_check_container)"
 
 
     echo ""
     echo "================================================================"
 
 
-    # If nothing is wrong, send a confirmation alert
-    if [ "$HAS_ISSUE" = false ]; then
-
-        # Dashboard summary
-        local OK_SUGGESTION=$(printf "Systems are running normally!\t\n\n➔ DISK   : %s%%\n➔ MEM    : %s%%\n➔ CPU    : %s%%\n➔ LOAD   : %s%%\n\n------------------------------------------------\n➔ DOCKER : %s" \
-            "$FINAL_DISK" "$FINAL_MEM" "$FINAL_CPU" "$FINAL_LOAD" "$FINAL_DOCKER")
-
-        send_gchat_alert "OK" "System Health Check" "0" "0" "$OK_SUGGESTION"
-    fi
+    # Send one master message which containing all messages related to error if good or bad
+    send_gchat_alert "$MASTER_REPORT"
 }
 
 main
