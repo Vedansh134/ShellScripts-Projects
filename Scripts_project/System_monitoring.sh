@@ -55,73 +55,24 @@ WEBHOOK_URL="https://chat.googleapis.com/v1/spaces/AAQAKRep3V8/messages?key=AIza
 # =============================================================
 #
 send_gchat_alert(){
-    local SEVERITY="$1"
-    local ALERT_TYPE="$2"
-    local USAGE_VALUE="$3"
-    local THRESHOLD_VALUE="$4"
-    local SUGGESTIONS="$5"
-
-    local ICON=""
-    local SEVERITY_LABEL=""
-
-    # Using 'case' to handle different severities gracefully
-    case "$SEVERITY" in
-        "CRITICAL")
-            ICON="🚨"
-            SEVERITY_LABEL="CRITICAL"
-            ;;
-        "WARNING")
-            ICON="⚠️"
-            SEVERITY_LABEL="WARNING"
-            ;;
-        "OK")
-            ICON="✅"
-            SEVERITY_LABEL="OK"
-            ;;
-        *)
-            ICON="ℹ️" # Fallback for anything else
-            SEVERITY_LABEL="INFO"
-    esac
+    local REPORT_BODY="$1"
 
     # Send gchat alert based on the alert type 
-    if [ "$SEVERITY" = "OK" ]; then
-        local FULL_MESSAGE="${ICON} *[${SEVERITY}] ${ALERT_TYPE}* 
+    local FULL_MESSAGE="${ICON} *[${SEVERITY}] ${ALERT_TYPE}* 
 
-        *- HOST :* \`${HOSTNAME}\`
-        *- DATE :* \`${DATE}\`
-        *- IP :* \`${IP}\`
-        *- NAME :* \`${NAME}\`
-        *- ENVIRONMENT :* \`${ENV}\`
+    *- HOST :* \`${HOSTNAME}\`
+    *- DATE :* \`${DATE}\`
+    *- IP :* \`${IP}\`
+    *- NAME :* \`${NAME}\`
+    *- ENVIRONMENT :* \`${ENV}\`
     
-        ----------------------------------------------------
+    ----------------------------------------------------
     
-        *System Status :*
+    *System Status Report :*
     
-        \t*- STATUS         :* \`All system operational.\`
-        \t*- SUGGESTIONS    :* \`${SUGGESTIONS}\`
-    
-        ----------------------------------------------------"
-    else
-        local FULL_MESSAGE="${ICON} *[${SEVERITY}] ${ALERT_TYPE}* 
+    ${REPORT_BODY}
 
-        *- HOST :* \`${HOSTNAME}\`
-        *- DATE :* \`${DATE}\`
-        *- IP :* \`${IP}\`
-        *- NAME :* \`${NAME}\`
-        *- ENVIRONMENT :* \`${ENV}\`
-    
-        ----------------------------------------------------
-    
-        *Usage Details :*
-    
-        \t*- ${SEVERITY} THRESHOLD :* \`${USAGE_VALUE}%\`
-        \t*- CRITICAL USAGE :* \`${THRESHOLD_VALUE=}\`
-    
-        \t*- SUGGESTIONS    :* \`${SUGGESTIONS}\`
-    
-        ----------------------------------------------------"
-    fi
-
+    ----------------------------------------------------"
 
     # Send to Google Chat
     curl -s -X POST -H 'Content-Type: application/json' \
