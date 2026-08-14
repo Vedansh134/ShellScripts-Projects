@@ -110,19 +110,19 @@ get_check_disk(){
 
     if [ "$DISK_USAGE" -ge "$CRITICAL_THRESHOLD" ]; then
         printf "[CRITICAL] %-10s : %s%%\n" "DISK Usage Extremely High" "$DISK_USAGE"
-        send_gchat_alert "CRITICAL" "Disk ALERT" "$DISK_USAGE" "$CRITICAL_THRESHOLD" "$SUGGESTION"
-        # echo "$DISK_USAGE"  # <-- Print the number so the variable captures it
+        echo "🚨 *DISK*   : ${DISK_USAGE}% (CRITICAL)\n   ➔ Suggestion: ${SUGGESTION}"
 
         return 1  # <--- Return an error code to indicate an issue occurred
 
     elif [ "$DISK_USAGE" -ge "$WARNING_THRESHOLD" ]; then
         printf "[WARNING] %-10s : %s%%\n" "DISK Usage" "$DISK_USAGE"
-        send_gchat_alert "WARNING" "Disk ALERT" "$DISK_USAGE" "$WARNING_THRESHOLD" "$SUGGESTION"
+        echo "⚠️ *DISK*   : ${DISK_USAGE}% (WARNING)\n   ➔ Suggestion: ${SUGGESTION}"
 
         return 1
 
     else
         printf "[OK]      %-10s : %s%%\n" "DISK Usage" "$DISK_USAGE"
+        echo "✅ *DISK*   : ${DISK_USAGE}% (NORMAL)"
 
         return 0  # <--- Return 0 (success) meaning everything is fine
     fi
@@ -142,18 +142,19 @@ get_check_memory(){
 
     if [ "$MEM_USAGE" -ge "$CRITICAL_THRESHOLD" ]; then
         printf "[CRITICAL] %-10s : %s%%\n" "MEMORY Usage Extremely High" "$MEM_USAGE"
-        send_gchat_alert "CRITICAL" "Memory ALERT" "$MEM_USAGE" "$CRITICAL_THRESHOLD" "$SUGGESTION"
+        echo "🚨 *MEMORY*   : ${MEM_USAGE}% (CRITICAL)\n   ➔ Suggestion: ${SUGGESTION}"
 
         return 1
 
     elif [ "$MEM_USAGE" -ge "$WARNING_THRESHOLD" ]; then
         printf "[WARNING] %-10s : %s%%\n" "MEMORY Usage" "$MEM_USAGE"
-        send_gchat_alert "WARNING" "Memory ALERT" "$MEM_USAGE" "$WARNING_THRESHOLD" "$SUGGESTION"
+        echo "⚠️ *MEMORY*   : ${MEM_USAGE}% (WARNING)\n   ➔ Suggestion: ${SUGGESTION}"
 
         return 1
 
     else
         printf "[OK]      %-10s : %s%%\n" "MEMORY Usage" "$MEM_USAGE"
+        echo "✅ *MEMORY*   : ${MEM_USAGE}% (NORMAL)\n"
 
         return 0
     fi
@@ -172,18 +173,19 @@ get_check_cpu(){
 
     if [ "$CPU_USAGE" -ge "$CRITICAL_THRESHOLD" ]; then 
         printf "[CRITICAL] %-10s : %s%%\n" "CPU Usage Extremely High" "$CPU_USAGE"
-        send_gchat_alert "CRITICAL" "CPU ALERT" "$CPU_USAGE" "$CRITICAL_THRESHOLD" "$SUGGESTION"
+        echo "🚨 *CPU*   : ${CPU_USAGE}% (CRITICAL)\n   ➔ Suggestion: ${SUGGESTION}"
 
         return 1
 
     elif [ "$CPU_USAGE" -ge "$WARNING_THRESHOLD" ]; then
         printf "[WARNING] %-10s : %s%%\n" "CPU Usage" "$CPU_USAGE"
-        send_gchat_alert "WARNING" "CPU ALERT" "$CPU_USAGE" "$WARNING_THRESHOLD" "$SUGGESTION"
+        echo "⚠️ *CPU*   : ${CPU_USAGE}% (WARNING)\n   ➔ Suggestion: ${SUGGESTION}"
 
         return 1
 
     else    
         printf "[OK]      %-10s : %s%%\n" "CPU Usage" "$CPU_USAGE"
+        echo "✅ *CPU*   : ${CPU_USAGE}% (NORMAL)\n"
 
         return 0
     fi
@@ -203,19 +205,20 @@ get_check_load(){
 
 
     if [ "$LOAD_PERCENT" -ge "$CRITICAL_THRESHOLD" ]; then
-        echo "Critical - CPU Load : ${LOAD_PERCENT}%, (${LOAD} load on ${CORES} cores)"
-        send_gchat_alert "CRITICAL" "Load ALERT" "$LOAD_PERCENT" "$CRITICAL_THRESHOLD" "$SUGGESTION"
+        printf "Critical - CPU Load : ${LOAD_PERCENT}%, (${LOAD} load on ${CORES} cores)"
+        echo "🚨 *LOAD*   : ${LOAD_PERCENT}% (CRITICAL)\n   ➔ Suggestion: ${SUGGESTION}"
 
         return 1
 
     elif [ "$LOAD_PERCENT" -ge "$WARNING_THRESHOLD" ]; then
-        echo "Warning - CPU Load : ${LOAD_PERCENT}%, (${LOAD} load on ${CORES} cores)"
-        send_gchat_alert "WARNING" "Load ALERT" "$LOAD_PERCENT" "$WARNING_THRESHOLD" "$SUGGESTION"
+        printf "Warning - CPU Load : ${LOAD_PERCENT}%, (${LOAD} load on ${CORES} cores)"
+        echo "⚠️ *LOAD*   : ${LOAD_PERCENT}% (WARNING)\n   ➔ Suggestion: ${SUGGESTION}"
 
         return 1
 
     else
-        echo "[OK]   CPU Load : ${LOAD_PERCENT}%, (${LOAD} load on ${CORES} cores)"
+        printf "[OK]   CPU Load : ${LOAD_PERCENT}%, (${LOAD} load on ${CORES} cores)"
+        echo "✅ *LOAD*   : ${LOAD_PERCENT}% (NORMAL)\n"
 
         return 0
     fi
@@ -247,7 +250,7 @@ get_check_container(){
     local SUGGEST_PORT_WARN="Container '$DOCKER_CONTAINER' is running but no port is exposed. Check docker run -p flags."
 
     local SUGGEST_STOP_CRITICAL="Container '$DOCKER_CONTAINER' is stopped. Run 'docker start $DOCKER_CONTAINER' immediately!"
-    local SUGGEST_NOT_EXIST_WARN="Container '$DOCKER_CONTAINER' does not exist. Please deploy it again!"
+    local SUGGEST_NOT_EXIST_CRITICAL="Container '$DOCKER_CONTAINER' does not exist. Please deploy it again!"
 
 
     # 1. Check Docker Service
@@ -257,8 +260,8 @@ get_check_container(){
 
     else 
         echo "[CRITICAL] Docker service is NOT RUNNING!"
-
-        send_gchat_alert "CRITICAL" "Docker Service Down" "0" "90" "$SUGGEST_DOCKER_STATUS_CRITICAL"
+        echo "🚨 *DOCKER* : Service Down (CRITICAL)\n   ➔ Suggestion: ${SUGGEST_DOCKER_STATUS_CRITICAL}"
+        
         return 1
     fi
 
@@ -283,13 +286,12 @@ get_check_container(){
                 echo ""
 
                 local DOCKER_SUMMARY=$(printf "Running | Port: %s | CPU: %s%% | MEM: %s%%" "$CONTAINER_PORT" "$DOCKER_CPU" "$DOCKER_MEM")
-                echo "$DOCKER_SUMMARY"
+                echo "✅ *DOCKER* : ${DOCKER_SUMMARY}"
                 return 0
 
             else
                 echo "   ➔ Port Mapping : No public port is exposed for this container"
-
-                send_gchat_alert "WARNING" "Docker Port Missing" "0" "90" "$SUGGEST_PORT_WARN"
+                echo "⚠️ *DOCKER* : Container running, but Port Missing (WARNING)\n   ➔ Suggestion: ${SUGGEST_PORT_WARN}"
 
                 # Return 1 immediately so main() knows it failed, and stop the function.
                 return 1 
@@ -299,14 +301,14 @@ get_check_container(){
             # check if it is exists but is stopped
             if docker ps -a --format '{{.Names}}' | grep -w "^$CONTAINER_NAME$" >/dev/null; then
                 echo "[CRITICAL] Container '$CONTAINER_NAME' is STOPPED!"
-
-                send_gchat_alert "CRITICAL" "Docker Container Down" "0" "90" "$SUGGEST_STOP_CRITICAL"
+                echo "🚨 *DOCKER* : Container STOPPED (CRITICAL)\n   ➔ Suggestion: ${SUGGEST_STOP_CRITICAL}"
+                
                 return 1
 
             else
                 echo "[CRITICAL] Container '$CONTAINER_NAME' does not EXIST!"
-
-                send_gchat_alert "CRITICAL" "Docker Container Missing" "0" "90" "$SUGGEST_NOT_EXIST_WARN"
+                echo "🚨 *DOCKER* : Container does not exist (CRITICAL)\n   ➔ Suggestion: ${SUGGEST_NOT_EXIST_CRITICAL}"
+                
                 return 1    # <--- This is required! It sets HAS_ISSUE=true in main()
             fi
         fi 
