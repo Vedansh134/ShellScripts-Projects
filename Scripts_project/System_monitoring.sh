@@ -58,7 +58,7 @@ send_gchat_alert(){
     local REPORT_BODY="$1"
 
     # Send gchat alert based on the alert type 
-    local FULL_MESSAGE="${ICON} *[${SEVERITY}] ${ALERT_TYPE}* 
+    local FULL_MESSAGE="✅ *[System Health Report]* 
 
     *- HOST :* \`${HOSTNAME}\`
     *- DATE :* \`${DATE}\`
@@ -68,11 +68,9 @@ send_gchat_alert(){
     
     ----------------------------------------------------
     
-    *System Status Report :*
-    
     ${REPORT_BODY}
 
-    ----------------------------------------------------"
+    "
 
     # Send to Google Chat
     curl -s -X POST -H 'Content-Type: application/json' \
@@ -108,21 +106,18 @@ get_check_disk(){
     local SUGGESTION="High disk usage detected. Run 'du -sh /* 2>/dev/null | sort -rh | head -10' to find large files/directories. Consider cleaning old logs or expanding the partition."
 
 
-    if [ "$DISK_USAGE" -ge "$CRITICAL_THRESHOLD" ]; then
-        printf "[CRITICAL] %-10s : %s%%\n" "DISK Usage Extremely High" "$DISK_USAGE"
+    if [ "$DISK_USAGE" -ge "$CRITICAL_THRESHOLD" ]; then        
         echo "🚨 *DISK*   : ${DISK_USAGE}% (CRITICAL)\n   ➔ Suggestion: ${SUGGESTION}"
 
         return 1  # <--- Return an error code to indicate an issue occurred
 
     elif [ "$DISK_USAGE" -ge "$WARNING_THRESHOLD" ]; then
-        printf "[WARNING] %-10s : %s%%\n" "DISK Usage" "$DISK_USAGE"
         echo "⚠️ *DISK*   : ${DISK_USAGE}% (WARNING)\n   ➔ Suggestion: ${SUGGESTION}"
 
         return 1
 
     else
-        printf "[OK]      %-10s : %s%%\n" "DISK Usage" "$DISK_USAGE"
-        echo "✅ *DISK*   : ${DISK_USAGE}% (NORMAL)"
+        echo "✅ *DISK*   : ${DISK_USAGE}% (NORMAL)\n"
 
         return 0  # <--- Return 0 (success) meaning everything is fine
     fi
@@ -141,19 +136,16 @@ get_check_memory(){
     
 
     if [ "$MEM_USAGE" -ge "$CRITICAL_THRESHOLD" ]; then
-        printf "[CRITICAL] %-10s : %s%%\n" "MEMORY Usage Extremely High" "$MEM_USAGE"
         echo "🚨 *MEMORY*   : ${MEM_USAGE}% (CRITICAL)\n   ➔ Suggestion: ${SUGGESTION}"
 
         return 1
 
     elif [ "$MEM_USAGE" -ge "$WARNING_THRESHOLD" ]; then
-        printf "[WARNING] %-10s : %s%%\n" "MEMORY Usage" "$MEM_USAGE"
         echo "⚠️ *MEMORY*   : ${MEM_USAGE}% (WARNING)\n   ➔ Suggestion: ${SUGGESTION}"
 
         return 1
 
     else
-        printf "[OK]      %-10s : %s%%\n" "MEMORY Usage" "$MEM_USAGE"
         echo "✅ *MEMORY*   : ${MEM_USAGE}% (NORMAL)\n"
 
         return 0
@@ -172,19 +164,16 @@ get_check_cpu(){
 
 
     if [ "$CPU_USAGE" -ge "$CRITICAL_THRESHOLD" ]; then 
-        printf "[CRITICAL] %-10s : %s%%\n" "CPU Usage Extremely High" "$CPU_USAGE"
         echo "🚨 *CPU*   : ${CPU_USAGE}% (CRITICAL)\n   ➔ Suggestion: ${SUGGESTION}"
 
         return 1
 
     elif [ "$CPU_USAGE" -ge "$WARNING_THRESHOLD" ]; then
-        printf "[WARNING] %-10s : %s%%\n" "CPU Usage" "$CPU_USAGE"
         echo "⚠️ *CPU*   : ${CPU_USAGE}% (WARNING)\n   ➔ Suggestion: ${SUGGESTION}"
 
         return 1
 
     else    
-        printf "[OK]      %-10s : %s%%\n" "CPU Usage" "$CPU_USAGE"
         echo "✅ *CPU*   : ${CPU_USAGE}% (NORMAL)\n"
 
         return 0
@@ -205,19 +194,16 @@ get_check_load(){
 
 
     if [ "$LOAD_PERCENT" -ge "$CRITICAL_THRESHOLD" ]; then
-        printf "Critical - CPU Load : ${LOAD_PERCENT}%, (${LOAD} load on ${CORES} cores)"
         echo "🚨 *LOAD*   : ${LOAD_PERCENT}% (CRITICAL)\n   ➔ Suggestion: ${SUGGESTION}"
 
         return 1
 
     elif [ "$LOAD_PERCENT" -ge "$WARNING_THRESHOLD" ]; then
-        printf "Warning - CPU Load : ${LOAD_PERCENT}%, (${LOAD} load on ${CORES} cores)"
         echo "⚠️ *LOAD*   : ${LOAD_PERCENT}% (WARNING)\n   ➔ Suggestion: ${SUGGESTION}"
 
         return 1
 
     else
-        printf "[OK]   CPU Load : ${LOAD_PERCENT}%, (${LOAD} load on ${CORES} cores)"
         echo "✅ *LOAD*   : ${LOAD_PERCENT}% (NORMAL)\n"
 
         return 0
@@ -240,8 +226,11 @@ get_process_cpu(){
 # -------------------------------------------------------------
 
 get_check_container(){
-    echo "[INFO] Docker Service Status :"
-    echo ""
+    echo "\n"
+    echo "\n----------------------------------------------------\n"
+    echo " "
+    printf "Docker Service Status :"
+    echo " "
 
     local DOCKER_CONTAINER=("mwmd_frontend_container")
     local DOCKER_SVC=$(systemctl is-active docker)
@@ -256,7 +245,7 @@ get_check_container(){
     # 1. Check Docker Service
     if [ "$DOCKER_SVC" = "active" ]; then
         echo ""
-        echo "[OK] Docker service is running."
+        echo "✅ Docker service is running."
 
     else 
         echo "[CRITICAL] Docker service is NOT RUNNING!"
@@ -268,7 +257,7 @@ get_check_container(){
     # 2. Check Container Status & Find its Port
     for CONTAINER_NAME in "${DOCKER_CONTAINER[@]}"; do
         if docker ps --format '{{.Names}}' | grep -w "^$CONTAINER_NAME$" >/dev/null; then
-            echo "[OK] Container '$CONTAINER_NAME' is running"
+            echo "✅ Container '$CONTAINER_NAME' is running"
             echo ""
 
             local CONTAINER_PORT=$(docker port "$CONTAINER_NAME" 2>/dev/null | awk '{print $3}' | head -1 | sed 's/0.0.0.0://')
@@ -285,8 +274,8 @@ get_check_container(){
                 echo "   ➔ Docker Stats : CPU: ${DOCKER_CPU}% | MEM: ${DOCKER_MEM}%"
                 echo ""
 
-                local DOCKER_SUMMARY=$(printf "Running | Port: %s | CPU: %s%% | MEM: %s%%" "$CONTAINER_PORT" "$DOCKER_CPU" "$DOCKER_MEM")
-                echo "✅ *DOCKER* : ${DOCKER_SUMMARY}"
+                # local DOCKER_SUMMARY=$(printf "Running | Port: %s | CPU: %s%% | MEM: %s%%" "$CONTAINER_PORT" "$DOCKER_CPU" "$DOCKER_MEM")
+                # echo "✅ *DOCKER* : ${DOCKER_SUMMARY}"
                 return 0
 
             else
@@ -346,6 +335,10 @@ main(){
 
     echo ""
     echo "================================================================"
+
+
+    # Print to linux terminal
+    echo -e "$MASTER_REPORT"
 
 
     # Send one master message which containing all messages related to error if good or bad
