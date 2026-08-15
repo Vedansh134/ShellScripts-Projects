@@ -105,10 +105,10 @@ get_check_disk(){
 
 
     if [ "$DISK_USAGE" -ge "$CRITICAL_THRESHOLD" ]; then        
-        echo "🚨 *DISK*   : ${DISK_USAGE}% (CRITICAL)\n   ➔ Suggestion: ${SUGGESTION}"
+        echo "🚨 *DISK*   : ${DISK_USAGE}% (CRITICAL)\n   ➔ Suggestion : ${SUGGESTION}"
         echo "\n"
     elif [ "$DISK_USAGE" -ge "$WARNING_THRESHOLD" ]; then
-        echo "⚠️ *DISK*   : ${DISK_USAGE}% (WARNING)\n   ➔ Suggestion: ${SUGGESTION}"
+        echo "⚠️ *DISK*   : ${DISK_USAGE}% (WARNING)\n   ➔ Suggestion : ${SUGGESTION}"
         echo "\n"
     else
         echo "✅ *DISK*   : ${DISK_USAGE}% (NORMAL)\n"
@@ -128,10 +128,10 @@ get_check_memory(){
     
 
     if [ "$MEM_USAGE" -ge "$CRITICAL_THRESHOLD" ]; then
-        echo "🚨 *MEMORY*   : ${MEM_USAGE}% (CRITICAL)\n   ➔ Suggestion: ${SUGGESTION}"
+        echo "🚨 *MEMORY*   : ${MEM_USAGE}% (CRITICAL)\n   ➔ Suggestion : ${SUGGESTION}"
         echo "\n"
     elif [ "$MEM_USAGE" -ge "$WARNING_THRESHOLD" ]; then
-        echo "⚠️ *MEMORY*   : ${MEM_USAGE}% (WARNING)\n   ➔ Suggestion: ${SUGGESTION}"
+        echo "⚠️ *MEMORY*   : ${MEM_USAGE}% (WARNING)\n   ➔ Suggestion : ${SUGGESTION}"
         echo "\n"
     else
         echo "✅ *MEMORY*   : ${MEM_USAGE}% (NORMAL)\n"
@@ -150,10 +150,10 @@ get_check_cpu(){
 
 
     if [ "$CPU_USAGE" -ge "$CRITICAL_THRESHOLD" ]; then 
-        echo "🚨 *CPU*   : ${CPU_USAGE}% (CRITICAL)\n   ➔ Suggestion: ${SUGGESTION}"
+        echo "🚨 *CPU*   : ${CPU_USAGE}% (CRITICAL)\n   ➔ Suggestion : ${SUGGESTION}"
         echo "\n"
     elif [ "$CPU_USAGE" -ge "$WARNING_THRESHOLD" ]; then
-        echo "⚠️ *CPU*   : ${CPU_USAGE}% (WARNING)\n   ➔ Suggestion: ${SUGGESTION}"
+        echo "⚠️ *CPU*   : ${CPU_USAGE}% (WARNING)\n   ➔ Suggestion : ${SUGGESTION}"
         echo "\n"
     else    
         echo "✅ *CPU*   : ${CPU_USAGE}% (NORMAL)\n"
@@ -174,10 +174,10 @@ get_check_load(){
 
 
     if [ "$LOAD_PERCENT" -ge "$CRITICAL_THRESHOLD" ]; then
-        echo "🚨 *LOAD*   : ${LOAD_PERCENT}% (CRITICAL)\n   ➔ Suggestion: ${SUGGESTION}"
+        echo "🚨 *LOAD*   : ${LOAD_PERCENT}% (CRITICAL)\n   ➔ Suggestion : ${SUGGESTION}"
         echo "\n"
     elif [ "$LOAD_PERCENT" -ge "$WARNING_THRESHOLD" ]; then
-        echo "⚠️ *LOAD*   : ${LOAD_PERCENT}% (WARNING)\n   ➔ Suggestion: ${SUGGESTION}"
+        echo "⚠️ *LOAD*   : ${LOAD_PERCENT}% (WARNING)\n   ➔ Suggestion : ${SUGGESTION}"
         echo "\n"
     else
         echo "✅ *LOAD*   : ${LOAD_PERCENT}% (NORMAL)\n"
@@ -222,7 +222,7 @@ get_check_container(){
         echo "✅ Docker service is running."
     else 
         echo "[CRITICAL] Docker service is NOT RUNNING!"
-        echo "🚨 *DOCKER* : Service Down (CRITICAL)\n   ➔ Suggestion: ${SUGGEST_DOCKER_STATUS_CRITICAL}"
+        echo "🚨 *DOCKER* : Service Down (CRITICAL)\n   ➔ Suggestion : ${SUGGEST_DOCKER_STATUS_CRITICAL}"
     fi
 
     # 2. Check Container Status & Find its Port
@@ -249,17 +249,17 @@ get_check_container(){
                 # echo "✅ *DOCKER* : ${DOCKER_SUMMARY}"
             else
                 echo "   ➔ Port Mapping : No public port is exposed for this container"
-                echo "⚠️ *DOCKER* : Container running, but Port Missing (WARNING)\n   ➔ Suggestion: ${SUGGEST_PORT_WARN}"
+                echo "⚠️ *DOCKER* : Container running, but Port Missing (WARNING)\n   ➔ Suggestion : ${SUGGEST_PORT_WARN}"
             fi
 
         else
             # check if it is exists but is stopped
             if docker ps -a --format '{{.Names}}' | grep -w "^$CONTAINER_NAME$" >/dev/null; then
                 echo "[CRITICAL] Container '$CONTAINER_NAME' is STOPPED!"
-                echo "🚨 *DOCKER* : Container STOPPED (CRITICAL)\n   ➔ Suggestion: ${SUGGEST_STOP_CRITICAL}"
+                echo "🚨 *DOCKER* : Container STOPPED (CRITICAL)\n   ➔ Suggestion : ${SUGGEST_STOP_CRITICAL}"
             else
                 echo "[CRITICAL] Container '$CONTAINER_NAME' does not EXIST!"
-                echo "🚨 *DOCKER* : Container does not exist (CRITICAL)\n   ➔ Suggestion: ${SUGGEST_NOT_EXIST_CRITICAL}"
+                echo "🚨 *DOCKER* : Container does not exist (CRITICAL)\n   ➔ Suggestion : ${SUGGEST_NOT_EXIST_CRITICAL}"
             fi
         fi 
     done 
