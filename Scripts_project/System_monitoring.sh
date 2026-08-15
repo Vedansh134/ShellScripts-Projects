@@ -42,9 +42,7 @@ ENV=("Staging")
 # =============================================================
 # Define the webhook URL
 # =============================================================
-#latest - WEBHOOK_URL="https://chat.googleapis.com/v1/spaces/AAQACwrHb3w/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=MJxeOKQ4OeGG8OowhbhGT02CrEa380GNwWvRQBmeUWU"
-
-WEBHOOK_URL="https://chat.googleapis.com/v1/spaces/AAQAKRep3V8/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=piseh4f0_bfmxeJr881E1FIHxlbhzTOFDETghtDsSXc"
+WEBHOOK_URL=""
 #
 # 
 # Create functions for check the CPU, MEMEORY, DISK, PROCESS and gchat
@@ -108,8 +106,10 @@ get_check_disk(){
 
     if [ "$DISK_USAGE" -ge "$CRITICAL_THRESHOLD" ]; then        
         echo "🚨 *DISK*   : ${DISK_USAGE}% (CRITICAL)\n   ➔ Suggestion: ${SUGGESTION}"
+        echo "\n"
     elif [ "$DISK_USAGE" -ge "$WARNING_THRESHOLD" ]; then
         echo "⚠️ *DISK*   : ${DISK_USAGE}% (WARNING)\n   ➔ Suggestion: ${SUGGESTION}"
+        echo "\n"
     else
         echo "✅ *DISK*   : ${DISK_USAGE}% (NORMAL)\n"
     fi
@@ -129,8 +129,10 @@ get_check_memory(){
 
     if [ "$MEM_USAGE" -ge "$CRITICAL_THRESHOLD" ]; then
         echo "🚨 *MEMORY*   : ${MEM_USAGE}% (CRITICAL)\n   ➔ Suggestion: ${SUGGESTION}"
+        echo "\n"
     elif [ "$MEM_USAGE" -ge "$WARNING_THRESHOLD" ]; then
         echo "⚠️ *MEMORY*   : ${MEM_USAGE}% (WARNING)\n   ➔ Suggestion: ${SUGGESTION}"
+        echo "\n"
     else
         echo "✅ *MEMORY*   : ${MEM_USAGE}% (NORMAL)\n"
     fi
@@ -149,8 +151,10 @@ get_check_cpu(){
 
     if [ "$CPU_USAGE" -ge "$CRITICAL_THRESHOLD" ]; then 
         echo "🚨 *CPU*   : ${CPU_USAGE}% (CRITICAL)\n   ➔ Suggestion: ${SUGGESTION}"
+        echo "\n"
     elif [ "$CPU_USAGE" -ge "$WARNING_THRESHOLD" ]; then
         echo "⚠️ *CPU*   : ${CPU_USAGE}% (WARNING)\n   ➔ Suggestion: ${SUGGESTION}"
+        echo "\n"
     else    
         echo "✅ *CPU*   : ${CPU_USAGE}% (NORMAL)\n"
     fi
@@ -171,8 +175,10 @@ get_check_load(){
 
     if [ "$LOAD_PERCENT" -ge "$CRITICAL_THRESHOLD" ]; then
         echo "🚨 *LOAD*   : ${LOAD_PERCENT}% (CRITICAL)\n   ➔ Suggestion: ${SUGGESTION}"
+        echo "\n"
     elif [ "$LOAD_PERCENT" -ge "$WARNING_THRESHOLD" ]; then
         echo "⚠️ *LOAD*   : ${LOAD_PERCENT}% (WARNING)\n   ➔ Suggestion: ${SUGGESTION}"
+        echo "\n"
     else
         echo "✅ *LOAD*   : ${LOAD_PERCENT}% (NORMAL)\n"
     fi
@@ -186,6 +192,7 @@ get_process_cpu(){
     echo ""
     echo "[INFO] Top 5 CPU-Consuming Processes : "
 
+    echo "\n"
     ps -eo pid,ppid,cmd,%mem,%cpu --sort=-%cpu | head -6
 }
 
@@ -194,8 +201,7 @@ get_process_cpu(){
 # -------------------------------------------------------------
 
 get_check_container(){
-    echo "\n"
-    echo "\n----------------------------------------------------\n"
+    echo "\n-------------------------------------------------------\n"
     echo " "
     printf "Docker Service Status :"
     echo " "
@@ -239,8 +245,8 @@ get_check_container(){
                 echo "   ➔ Docker Stats : CPU: ${DOCKER_CPU}% | MEM: ${DOCKER_MEM}%"
                 echo ""
 
-                local DOCKER_SUMMARY=$(printf "Running | Port: %s | CPU: %s%% | MEM: %s%%" "$CONTAINER_PORT" "$DOCKER_CPU" "$DOCKER_MEM")
-                echo "✅ *DOCKER* : ${DOCKER_SUMMARY}
+                # local DOCKER_SUMMARY=$(printf "Running | Port: %s | CPU: %s%% | MEM: %s%%" "$CONTAINER_PORT" "$DOCKER_CPU" "$DOCKER_MEM")
+                # echo "✅ *DOCKER* : ${DOCKER_SUMMARY}"
             else
                 echo "   ➔ Port Mapping : No public port is exposed for this container"
                 echo "⚠️ *DOCKER* : Container running, but Port Missing (WARNING)\n   ➔ Suggestion: ${SUGGEST_PORT_WARN}"
@@ -257,14 +263,6 @@ get_check_container(){
             fi
         fi 
     done 
-
-
-    # Top Docker Containers (Added || true to prevent crash if no containers)
-    echo ""
-    echo "[INFO] Top Containers by CPU Usage :"
-    echo ""
-    # docker stats --no-stream takes a single snapshot. --format allows clean output.
-    docker stats --no-stream --format "table {{.Name}}\t{{.CPUPerc}}\t{{.MemPerc}}\t{{.MemUsage}}" | head -2 || true 
 }
 
 
@@ -279,13 +277,21 @@ main(){
 
     local MASTER_REPORT=""
 
-    # Run each function check, if it is found anything in echo so it will append to MASTER_REPORT
-    MASTER_REPORT+="$(get_check_disk)"      || true
-    MASTER_REPORT+="$(get_check_memory)"    || true
-    MASTER_REPORT+="$(get_check_cpu)"       || true
-    MASTER_REPORT+="$(get_check_load)"      || true
-    MASTER_REPORT+="$(get_process_cpu)"     || true
-    MASTER_REPORT+="$(get_check_container)" || true
+    # CORRECTED: Run the commands first, and IF it fails, append "|| true" properly
+    local DISK_OUT="$(get_check_disk)" || true
+    local MEM_OUT="$(get_check_memory)" || true
+    local CPU_OUT="$(get_check_cpu)" || true
+    local LOAD_OUT="$(get_check_load)" || true
+    #local PROC_OUT="$(get_process_cpu)" || true
+    local DOCKER_OUT="$(get_check_container)" || true
+
+    # Now append the pure, clean outputs into the master report
+    MASTER_REPORT+="${DISK_OUT}"
+    MASTER_REPORT+="${MEM_OUT}"
+    MASTER_REPORT+="${CPU_OUT}"
+    MASTER_REPORT+="${LOAD_OUT}"
+    #MASTER_REPORT+="${PROC_OUT}"
+    MASTER_REPORT+="${DOCKER_OUT}"
 
 
     echo ""
