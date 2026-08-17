@@ -294,10 +294,6 @@ main(){
     MASTER_REPORT+="${DOCKER_OUT}"
 
 
-    echo ""
-    echo "================================================================"
-
-
     # Print to linux terminal
     echo -e "$MASTER_REPORT"
 
