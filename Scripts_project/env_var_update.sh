@@ -5,7 +5,7 @@
 # Author : Vedansh kumar
 # Created on : 25-08-2026
 # Version : v1
-# Description : To automate the process of update the application after updated the env var.
+# Description : Automate application build, PM2 restart after environment variable changes and application health checks.
 #
 # ===========================================================================================
 #
@@ -13,50 +13,81 @@
 set -euo pipefail
 
 # ============================================
-# Build the application
+# Application configuration 
 # ============================================
 
-echo ""
-npm run build
-echo "App build successfully"
-echo ""
 
-# ============================================
-# Restart the pm2
-# ============================================
+APP_NAME="myworkmyday"
+APP_URL="http://10.101.10.105"
+APP_PORT="3000"
+APP_DIR="/opt/mwmd"
 
-echo ""
-pm2 restart myworkmyday --update-env
-echo "Environment variables updated successfully"
-echo ""
+DATE=$(date "+%A, %B %d, %Y %I:%M:%S %p")
 
-# =================================================
-# save pm2 application
-# =================================================
 
-echo ""
-pm2 save
-echo "pm2 save successufully"
-echo ""
+# =================================================================
+# Checked directory
 
-# ================================================
-# describe the pm2 
-# ================================================
+if [[ "$PWD" != "$APP_DIR" ]]; then
+    echo "[ERROR] Please run this script from : $APP_DIR"
+    exit 1
+fi
 
 echo ""
-pm2 describe myworkmyday
+echo "====================================================="
+echo "=========== Starting Application Update ============="
+echo ""
+echo ""
+echo ""
+echo "====================================================="
 echo ""
 
-# check pm2 status
 
-echo ""
-pm2 status
-echo ""
+# ================================================================
+# Function for update the env var
 
-# check the application is listening and on which port
-curl http://10.101.10.105
-ss -tulpn | grep 3000
-echo ""
+update_env(){
+    # Build app
+    echo "[INFO] Building application...at '${DATE}'"
+    npm run build
+    echo "[INFO] Build completed successfully."
+    echo ""
 
-echo "env updated successfully"
-echo ""
+    echo "[INFO] Restarting PM2..."
+    pm2 restart myworkmyday --update-env
+    echo "[INFO] PM2 restart successful."
+    echo ""
+
+    echo ""
+    pm2 save
+    echo "pm2 save successufully"
+    echo ""
+
+    echo "[INFO] Checking application..."
+    echo "[PASS] PM2 process is online."
+
+    echo ""
+    pm2 describe myworkmyday
+    echo ""
+
+    echo ""
+    pm2 status
+    echo ""
+
+    ss -tulpn | grep 3000
+    echo "[PASS] Port 3000 is listening."
+
+    curl http://10.101.10.105
+    echo "[PASS] Application health check successful."
+    echo ""
+
+    echo "env updated successfully at '${DATE}'"
+    echo ""
+}
+
+main(){
+    update_env
+}
+
+
+main
