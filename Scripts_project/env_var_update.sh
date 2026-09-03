@@ -1,13 +1,13 @@
 #!/bin/bash
 
-# ==========================================================================================
+# =======================================================================================================================
 #
 # Author : Vedansh kumar
 # Created on : 25-08-2026
 # Version : v1
 # Description : Automate application build, PM2 restart after environment variable changes and application health checks.
 #
-# ===========================================================================================
+# =======================================================================================================================
 #
 # Test for errors in script
 set -euo pipefail
@@ -17,10 +17,11 @@ set -euo pipefail
 # ============================================
 
 
-APP_NAME="myworkmyday"
-APP_URL="http://10.101.10.105"
-APP_PORT="3000"
-APP_DIR="/opt/mwmd"
+APP_NAME="strapi-staging"
+APP_URL="http://10.101.10.87:1337"
+APP_PORT="1337"
+APP_DIR="/opt/strapi-app"
+APP_USER="deploy"
 
 DATE=$(date "+%A, %B %d, %Y %I:%M:%S %p")
 
@@ -33,61 +34,100 @@ if [[ "$PWD" != "$APP_DIR" ]]; then
     exit 1
 fi
 
+if [[ "$(id -un)" != "$APP_USER" ]]; then
+    echo "[ERROR] Please run this script from $APP_USER user"
+    exit 1
+fi
+
 echo ""
 echo "====================================================="
 echo "=========== Starting Application Update ============="
 echo ""
-echo ""
-echo ""
+echo "Time        : $DATE"
+echo "Application : $APP_NAME"
+echo "Directory   : $APP_DIR"
 echo "====================================================="
 echo ""
 
 
-# ================================================================
-# Function for update the env var
+# =====================================================
+# Build Application
+# =====================================================
 
-update_env(){
-    # Build app
-    echo "[INFO] Building application...at '${DATE}'"
-    npm run build
-    echo "[INFO] Build completed successfully."
-    echo ""
 
-    echo "[INFO] Restarting PM2..."
-    pm2 restart myworkmyday --update-env
-    echo "[INFO] PM2 restart successful."
-    echo ""
+echo "[INFO] Building application..."
+npm run build
+echo "[PASS] Application Build completed successfully."
+echo ""
 
-    echo ""
-    pm2 save
-    echo "pm2 save successufully"
-    echo ""
 
-    echo "[INFO] Checking application..."
-    echo "[PASS] PM2 process is online."
+# =====================================================
+# Restart PM2 with updated env variables
+# =====================================================
 
-    echo ""
-    pm2 describe myworkmyday
-    echo ""
 
-    echo ""
-    pm2 status
-    echo ""
+echo "[INFO] Restarting PM2..."
+pm2 restart "$APP_NAME" --update-env
+echo "[PASS] PM2 application restarted successfully."
+echo ""
 
-    ss -tulpn | grep 3000
-    echo "[PASS] Port 3000 is listening."
 
-    curl http://10.101.10.105
+# =====================================================
+# 
+# =====================================================
+
+
+echo "[INFO] Saving PM2 process list"
+pm2 save
+echo "[PASS] PM2 process list saved"
+echo ""
+
+
+# =====================================================
+# Check PM2 Status
+# =====================================================
+
+
+echo "[INFO] Checking PM2 Status..."
+pm2 status "$APP_NAME"
+echo ""
+
+
+# =====================================================
+# Check Application Port
+# =====================================================
+
+
+echo "[INFO] Checking port $APP_PORT..."
+if ss -lnt | grep -q ":$APP_PORT"; then
+    echo "[PASS] Port $APP_PORT is listening."
+else
+    echo "[ERROR] Port $APP_PORT is not listening."
+    exit 1
+fi
+
+
+# =====================================================
+# Check Application Health
+# =====================================================
+
+echo "[INFO] Checking application health..."
+
+if curl -fsS --max-time 10 "$APP_URL" >/dev/null; then
     echo "[PASS] Application health check successful."
-    echo ""
-
-    echo "env updated successfully at '${DATE}'"
-    echo ""
-}
-
-main(){
-    update_env
-}
+else
+    echo "[ERROR] Application health check failed."
+exit 1
+fi
 
 
-main
+# ============================================================
+# Final Status
+# ============================================================
+
+
+echo "============================================================"
+echo "[SUCCESS] Environment update completed successfully."
+echo "Application : $APP_NAME"
+echo "Time        : $DATE"
+echo "============================================================"
